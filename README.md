@@ -4,6 +4,51 @@ OSSCA 2025 Git 리베이스 실습
 이 저장소는 OSSCA 2025 멘티들을 위한 Git 리베이스 실습 교보재입니다.
 
 
+리베이스란?
+-----------
+
+Git에서 **리베이스**(rebase)란 이름 그대로 커밋들의 기반을 바꾸는 것을 뜻합니다.
+예를 들어 다음과 같은 두 개의 브랜치가 있을 때:
+
+~~~ mermaid
+---
+config:
+  gitGraph:
+    mainBranchName: a
+---
+gitGraph BT:
+  commit id: "공통 조상 1"
+  commit id: "공통 조상 2"
+  commit id: "공통 조상 3"
+  branch b
+  commit id: "B 커밋 1"
+  commit id: "B 커밋 2"
+  checkout a
+  commit id: "A 커밋 1"
+  commit id: "A 커밋 2"
+  commit id: "A 커밋 3"
+~~~~
+
+다음과 같이 선형화하는 것을 뜻합니다:
+
+~~~~ mermaid
+---
+config:
+  gitGraph:
+    mainBranchName: a
+---
+gitGraph BT:
+  commit id: "공통 조상 1"
+  commit id: "공통 조상 2"
+  commit id: "공통 조상 3"
+  commit id: "B 커밋 1"
+  commit id: "B 커밋 2"
+  commit id: "A 커밋 1"
+  commit id: "A 커밋 2"
+  commit id: "A 커밋 3"
+~~~~
+
+
 충돌 없는 경우
 --------------
 
