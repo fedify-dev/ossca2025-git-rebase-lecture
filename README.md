@@ -524,3 +524,13 @@ index 4cff94d..9cda9da 100644
 -화이팅!
 +모두들 화이팅!
 ~~~~
+
+
+참고 자료
+---------
+
+리베이스에 대해 좀 더 자세히 알고 싶은 분들께는 다음 자료들을 추천합니다:
+
+- [기록 다시 쓰기](https://www.atlassian.com/ko/git/tutorials/rewriting-history)
+- [Git 도구 - 히스토리 단장하기](https://git-scm.com/book/ko/v2/Git-%eb%8f%84%ea%b5%ac-%ed%9e%88%ec%8a%a4%ed%86%a0%eb%a6%ac-%eb%8b%a8%ec%9e%a5%ed%95%98%ea%b8%b0)
+- [`git-rebase`](https://git-scm.com/docs/git-rebase)
