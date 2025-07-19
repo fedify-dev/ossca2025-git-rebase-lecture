@@ -333,3 +333,194 @@ gitGraph BT:
 ~~~~ sh
 git push --force origin w-conflict-a
 ~~~~
+
+
+커밋 합치기
+-----------
+
+마지막으로 실습할 것을 2개 이상의 커밋을 하나로 합치는 것입니다. 다음과 같은 커밋들이 있습니다:
+
+~~~~ mermaid
+---
+config:
+  gitGraph:
+    mainBranchName: fixup
+---
+gitGraph BT:
+    commit id: "첫 커밋"
+    commit id: "'모두들' 추가"
+    commit id: "파일 → 문서"
+    commit id: '"리베이스"에 "rebase" 영문 병기'
+    commit id: "'모두들' 오타 수정"
+~~~~
+
+일단 우리는 `fixup` 브랜치에 있다고 가정합시다:
+
+~~~~ sh
+git switch fixup
+~~~~
+
+두 번째 커밋인 `'모두들' 추가`와 마지막 커밋인 `'모두들' 오타 수정`을 다음과 같이 합치는 것이 목표입니다:
+
+~~~~ mermaid
+---
+config:
+  gitGraph:
+    mainBranchName: fixup
+---
+gitGraph BT:
+    commit id: "첫 커밋"
+    commit id: "'모두들' 추가" tag: "합쳐짐: '모두들' 오타 수정"
+    commit id: "파일 → 문서"
+    commit id: '"리베이스"에 "rebase" 영문 병기'
+~~~~
+
+우선 현재의 커밋 목록을 `git log --graph` 커맨드로 확인합시다 (최신순으로 나옵니다):
+
+~~~~
+* commit fd7d20fe822f10ffee308a05c688e2436384dea5
+| Author: Hong Minhee <hong@minhee.org>
+| Date:   2025-07-19 11:51:50 +0900
+| 
+|     '모두들' 오타 수정
+| 
+* commit a8a8830062223c2b5b5444bf5aa44dddade0467b
+| Author: Hong Minhee <hong@minhee.org>
+| Date:   2025-07-19 11:51:23 +0900
+| 
+|     "리베이스"에 "rebase" 영문 병기
+| 
+* commit bbec26eab187183bf2e731c99a6b74dfa7b1914f
+| Author: Hong Minhee <hong@minhee.org>
+| Date:   2025-07-19 11:50:47 +0900
+| 
+|     파일 → 문서
+| 
+* commit 9aae45aba657f3132744402b3cc066bf86542d12
+| Author: Hong Minhee <hong@minhee.org>
+| Date:   2025-07-19 11:49:52 +0900
+| 
+|     '모두들' 추가
+| 
+* commit bc48c3fef401e08fdf23f3cc17a8c4c5a9869554
+  Author: Hong Minhee <hong@minhee.org>
+  Date:   2025-07-18 10:45:57 +0900
+  
+      첫 커밋
+~~~~
+
+우리는 `fd7d20fe822f10ffee308a05c688e2436384dea5` 커밋(`'모두들' 오타 수정`)을 `9aae45aba657f3132744402b3cc066bf86542d12` 커밋(`'모두들' 추가`)에 합치고자 합니다. 이를 위해서는 `git rebase` 커맨드의 `-i`/`--interactive` 옵션을 써야 합니다.
+
+우리가 수정하려는 가장 오래된 커밋이 `9aae45aba657f3132744402b3cc066bf86542d12` 커밋(`'모두들' 추가`)이므로, 그보다 바로 앞 커밋인 `bc48c3fef401e08fdf23f3cc17a8c4c5a9869554` 커밋(`첫 커밋`)을 대상으로 인터랙티브 리베이스를 실행합니다:
+
+~~~~ sh
+git rebase --interactive bc48c3fef401e08fdf23f3cc17a8c4c5a9869554
+~~~~
+
+그러면 편집기가 실행되면서 다음과 같은 텍스트를 조작하게 됩니다. 첫 줄이 가장 오래된 커밋이고, 마지막 줄이 가장 최신 커밋입니다:
+
+~~~~
+pick 9aae45a # '모두들' 추가
+pick bbec26e # 파일 → 문서
+pick a8a8830 # "리베이스"에 "rebase" 영문 병기
+pick fd7d20f # '모두들' 오타 수정
+
+# Rebase bc48c3f..fd7d20f onto bc48c3f (4 commands)
+#
+# Commands:
+# p, pick <commit> = use commit
+# r, reword <commit> = use commit, but edit the commit message
+# e, edit <commit> = use commit, but stop for amending
+# s, squash <commit> = use commit, but meld into previous commit
+# f, fixup [-C | -c] <commit> = like "squash" but keep only the previous
+#                    commit's log message, unless -C is used, in which case
+#                    keep only this commit's message; -c is same as -C but
+#                    opens the editor
+# x, exec <command> = run command (the rest of the line) using shell
+# b, break = stop here (continue rebase later with 'git rebase --continue')
+# d, drop <commit> = remove commit
+# l, label <label> = label current HEAD with a name
+# t, reset <label> = reset HEAD to a label
+# m, merge [-C <commit> | -c <commit>] <label> [# <oneline>]
+#         create a merge commit using the original merge commit's
+#         message (or the oneline, if no original merge commit was
+#         specified); use -c <commit> to reword the commit message
+# u, update-ref <ref> = track a placeholder for the <ref> to be updated
+#                       to this position in the new commits. The <ref> is
+#                       updated at the end of the rebase
+#
+# These lines can be re-ordered; they are executed from top to bottom.
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+#
+# However, if you remove everything, the rebase will be aborted.
+#
+~~~~
+
+그럼 이 텍스트를 다음과 같이 편집합니다. `fd7d20f` 커밋(`'모두들' 오타 수정`)을 `9aae45a` 커밋(`'모두들' 추가`) 바로 아래로 올리고, `pick`이라는 키워드를 `fixup`으로 바꿉니다:
+
+~~~~
+pick 9aae45a # '모두들' 추가
+fixup fd7d20f # '모두들' 오타 수정 ← 위치가 바뀌고 pick → fixup으로 고침
+pick bbec26e # 파일 → 문서
+pick a8a8830 # "리베이스"에 "rebase" 영문 병기
+~~~~
+
+텍스트를 저장하고 편집기를 종료하면 리베이스가 진행됩니다:
+
+~~~~
+Successfully rebased and updated refs/heads/fixup.
+~~~~
+
+다시 한 번 `git log --graph` 커맨드를 실행해 보면, 아래와 같이 커밋이 4개로 하나 준 것을 확인할 수 있습니다(각각의 커밋 ID는 아래와 다를 수 있습니다):
+
+~~~~
+* commit 180989f281575ffa2991905e0ad0f59d265ec55c
+| Author: Hong Minhee <hong@minhee.org>
+| Date:   2025-07-19 11:51:23 +0900
+| 
+|     "리베이스"에 "rebase" 영문 병기
+| 
+* commit 7f40f552e91ddd5ea2f42e602149c99fbd0b3f1e
+| Author: Hong Minhee <hong@minhee.org>
+| Date:   2025-07-19 11:50:47 +0900
+| 
+|     파일 → 문서
+| 
+* commit 4dfcf927045d02cad9713ed1044d6214854488d9
+| Author: Hong Minhee <hong@minhee.org>
+| Date:   2025-07-19 11:49:52 +0900
+| 
+|     '모두들' 추가
+| 
+* commit bc48c3fef401e08fdf23f3cc17a8c4c5a9869554
+  Author: Hong Minhee <hong@minhee.org>
+  Date:   2025-07-18 10:45:57 +0900
+  
+      첫 커밋
+~~~~
+
+`'모두들' 추가`에 해당하는 커밋(커밋 ID는 여러분의 `git log` 커맨드 결과에서 복사하세요)을 `git show` 커맨드로 확인하면 2개의 수정이 하나로 합쳐진 것을 확인할 수 있습니다:
+
+~~~~ sh
+git show 4dfcf927045d02cad9713ed1044d6214854488d9
+~~~~
+
+~~~~ diff
+commit 4dfcf927045d02cad9713ed1044d6214854488d9
+Author: Hong Minhee <hong@minhee.org>
+Date:   2025-07-19 11:49:52 +0900
+
+    '모두들' 추가
+
+diff --git a/README.md b/README.md
+index 4cff94d..9cda9da 100644
+--- a/README.md
++++ b/README.md
+@@ -5,4 +5,4 @@ Git 리베이스 실습
+ 
+ 이 실습을 통해 Git 리베이스의 기본 개념과 사용법을 익힐 수 있습니다.
+ 
+-화이팅!
++모두들 화이팅!
+~~~~
